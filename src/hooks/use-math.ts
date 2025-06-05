@@ -2,44 +2,56 @@ import { compile } from 'mathjs';
 import { useCallback, useRef, useState } from 'react';
 
 /**
- * Scope for variables used in math expression evaluation.
+ * Interface for Map-like scope objects compatible with mathjs.
  */
-export type ScopeType = Record<string, unknown>;
+export interface MapLike<TKey = string, TValue = unknown> {
+  get(key: TKey): TValue;
+  set(key: TKey, value: TValue): TValue;
+  has(key: TKey): boolean;
+  keys(): IterableIterator<TKey> | TKey[];
+}
 
 /**
- * Result structure for math expression validation and calculation.
+ * Scope for variables used in math expression evaluation.
+ * Can be a plain object, ES6 Map, or any Map-like duck type.
  */
-export type CalculationResult = {
-  result: number | null;
+export type ScopeType = Record<string, unknown> | MapLike<string, unknown>;
+
+/**
+ * Result structure for math expression validation and evaluation.
+ */
+export type EvaluationResult = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  result: any;
   error: string | null;
   isValid: boolean | null;
 };
 
 /**
  * Options for configuring the useMath hook.
- * @property {CalculationResult} [initialResult] - Initial state for the hook.
- * @property {(result: CalculationResult) => CalculationResult} [onValidationComplete] - Callback after validation.
+ * @property {EvaluationResult} [initialResult] - Initial state for the hook.
+ * @property {(result: EvaluationResult) => EvaluationResult} [onValidationComplete] - Callback after validation.
  * @property {(error: unknown) => string} [errorMessageMap] - Custom error message mapping.
- * @property {number} [debounceMs] - Debounce time in milliseconds for calculate.
+ * @property {number} [debounceMs] - Debounce time in milliseconds for evaluate.
  */
 export type UseMathOptions = {
-  initialResult?: CalculationResult;
-  onValidationComplete?: (result: CalculationResult) => CalculationResult;
+  initialResult?: EvaluationResult;
+  onValidationComplete?: (result: EvaluationResult) => EvaluationResult;
   errorMessageMap?: (error: unknown) => string;
   debounceMs?: number;
 };
 
 /**
  * Return type of the useMath hook.
- * @property {CalculationResult} state - Current calculation/validation state.
- * @property {(expr: string, scope?: ScopeType) => void} calculate - Debounced async calculation.
- * @property {(expr: string, scope?: ScopeType) => CalculationResult} calculateSync - Synchronous validation.
+ * @property {EvaluationResult} state - Current evaluation/validation state.
+ * @property {(expr: string, scope?: ScopeType) => void} evaluate - Debounced async evaluation.
+ * @property {(expr: string, scope?: ScopeType) => EvaluationResult} evaluateSync - Synchronous validation.
  * @property {() => void} reset - Reset state to initialResult.
  */
 export type UseMathResult = {
-  state: CalculationResult;
-  calculate: (expr: string, scope?: ScopeType) => void;
-  calculateSync: (expr: string, scope?: ScopeType) => CalculationResult;
+  state: EvaluationResult;
+  evaluate: (expr: string, scope?: ScopeType) => void;
+  evaluateSync: (expr: string, scope?: ScopeType) => EvaluationResult;
   reset: () => void;
 };
 
@@ -60,38 +72,43 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
     debounceMs = 0,
   } = options;
 
-  const [state, setState] = useState<CalculationResult>(initialResult);
+  const [state, setState] = useState<EvaluationResult>(initialResult);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const calculateSync = useCallback(
-    (expr: string, scope?: ScopeType): CalculationResult => {
+  const evaluateSync = useCallback(
+    (expr: string, scope?: ScopeType): EvaluationResult => {
       try {
         const compiled = compile(expr);
         const res = compiled.evaluate(scope);
-        const calculationResult: CalculationResult = {
+        const evaluationResult: EvaluationResult = {
           result: res,
           error: null,
           isValid: true,
         };
         return typeof onValidationComplete === 'function'
-          ? onValidationComplete(calculationResult)
-          : calculationResult;
+          ? onValidationComplete(evaluationResult)
+          : evaluationResult;
       } catch (err: unknown) {
-        const customMsg = errorMessageMap
-          ? errorMessageMap(err)
-          : err instanceof Error && err.message
-            ? err.message
-            : 'ValidationError';
+        let customMsg: string;
+
+        if (errorMessageMap) {
+          customMsg = errorMessageMap(err);
+        } else if (err instanceof Error && err.message) {
+          customMsg = err.message;
+        } else {
+          customMsg = 'ValidationError';
+        }
+
         return { result: null, error: customMsg, isValid: false };
       }
     },
     [onValidationComplete, errorMessageMap],
   );
 
-  const calculate = useCallback(
+  const evaluate = useCallback(
     (expr: string, scope?: ScopeType) => {
       const exec = () => {
-        const nextState = calculateSync(expr, scope);
+        const nextState = evaluateSync(expr, scope);
         setState(nextState);
       };
       if (debounceMs > 0) {
@@ -101,12 +118,12 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
         exec();
       }
     },
-    [debounceMs, calculateSync],
+    [debounceMs, evaluateSync],
   );
 
   const reset = useCallback(() => {
     setState(initialResult);
   }, [initialResult]);
 
-  return { state, calculate, calculateSync, reset };
+  return { state, evaluate, evaluateSync, reset };
 };

@@ -3,12 +3,12 @@ import { describe, it, expect } from 'vitest';
 import { useMath } from './use-math';
 
 describe('useMath', () => {
-  describe('calculate', () => {
-    it('calculate a valid expression', () => {
+  describe('evaluate', () => {
+    it('evaluate a valid expression', () => {
       const { result } = renderHook(() => useMath());
 
       act(() => {
-        result.current.calculate('2 + 3', undefined);
+        result.current.evaluate('2 + 3', undefined);
       });
 
       expect(result.current.state.result).toBe(5);
@@ -19,7 +19,7 @@ describe('useMath', () => {
       const { result } = renderHook(() => useMath());
 
       act(() => {
-        result.current.calculate('2 + ');
+        result.current.evaluate('2 + ');
       });
 
       expect(result.current.state.result).toBeNull();
@@ -27,10 +27,10 @@ describe('useMath', () => {
     });
   });
 
-  describe('validateSync', () => {
+  describe('evaluateSync', () => {
     it('returns correct result for valid expression', () => {
       const { result } = renderHook(() => useMath());
-      const res = result.current.calculateSync('4 * 5');
+      const res = result.current.evaluateSync('4 * 5');
       expect(res.result).toBe(20);
       expect(res.error).toBeNull();
       expect(res.isValid).toBe(true);
@@ -38,7 +38,7 @@ describe('useMath', () => {
 
     it('returns error for invalid expression', () => {
       const { result } = renderHook(() => useMath());
-      const res = result.current.calculateSync('4 *');
+      const res = result.current.evaluateSync('4 *');
       expect(res.result).toBeNull();
       expect(res.error).toBeTruthy();
       expect(res.isValid).toBe(false);
@@ -51,7 +51,7 @@ describe('useMath', () => {
       const { result } = renderHook(() => useMath({ initialResult }));
 
       act(() => {
-        result.current.calculate('1 + 1');
+        result.current.evaluate('1 + 1');
       });
       expect(result.current.state.result).toBe(2);
 
