@@ -1,0 +1,58 @@
+{
+  "name": "use-mathjs",
+  "version": "1.0.0",
+  "description": "A powerful, React hook built with mathjs for safely evaluating, formatting, and analyzing math expressions in React apps.",
+  "keywords": [
+    "react",
+    "hook",
+    "mathjs",
+    "calculator",
+    "formula"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JayChang4w/use-mathjs.git"
+  },
+  "license": "MIT",
+  "author": "jaychang4w@gmail.com",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "test": "vitest run",
+    "prepublishOnly": "vitest run && npm run build"
+  },
+  "dependencies": {
+    "mathjs": "^14.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.4",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.1.0",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.1.3"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  }
+}
