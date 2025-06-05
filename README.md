@@ -89,7 +89,7 @@ function Calculator() {
 #### Options
 
 - `initialResult` — Initial state (default: `{ result: null, error: null, isValid: null }`)
-- `onValidationComplete(result)` — Callback after evaluation
+- `onEvaluated(result)` — Callback after evaluation
 - `errorMessageMap(error)` — Custom error message mapping
 - `debounceMs` — Debounce evaluation in milliseconds
 

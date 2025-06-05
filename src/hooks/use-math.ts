@@ -30,13 +30,13 @@ export type EvaluationResult = {
 /**
  * Options for configuring the useMath hook.
  * @property {EvaluationResult} [initialResult] - Initial state for the hook.
- * @property {(result: EvaluationResult) => EvaluationResult} [onValidationComplete] - Callback after validation.
+ * @property {(result: EvaluationResult) => EvaluationResult} [onEvaluated] - Callback after evaluation.
  * @property {(error: unknown) => string} [errorMessageMap] - Custom error message mapping.
  * @property {number} [debounceMs] - Debounce time in milliseconds for evaluate.
  */
 export type UseMathOptions = {
   initialResult?: EvaluationResult;
-  onValidationComplete?: (result: EvaluationResult) => EvaluationResult;
+  onEvaluated?: (result: EvaluationResult) => EvaluationResult;
   errorMessageMap?: (error: unknown) => string;
   debounceMs?: number;
 };
@@ -45,7 +45,7 @@ export type UseMathOptions = {
  * Return type of the useMath hook.
  * @property {EvaluationResult} state - Current evaluation/validation state.
  * @property {(expr: string, scope?: ScopeType) => void} evaluate - Debounced async evaluation.
- * @property {(expr: string, scope?: ScopeType) => EvaluationResult} evaluateSync - Synchronous validation.
+ * @property {(expr: string, scope?: ScopeType) => EvaluationResult} evaluateSync - Synchronous evaluation.
  * @property {() => void} reset - Reset state to initialResult.
  */
 export type UseMathResult = {
@@ -67,7 +67,7 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
       error: null,
       isValid: null,
     },
-    onValidationComplete,
+    onEvaluated,
     errorMessageMap,
     debounceMs = 0,
   } = options;
@@ -85,9 +85,7 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
           error: null,
           isValid: true,
         };
-        return typeof onValidationComplete === 'function'
-          ? onValidationComplete(evaluationResult)
-          : evaluationResult;
+        return typeof onEvaluated === 'function' ? onEvaluated(evaluationResult) : evaluationResult;
       } catch (err: unknown) {
         let customMsg: string;
 
@@ -102,7 +100,7 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
         return { result: null, error: customMsg, isValid: false };
       }
     },
-    [onValidationComplete, errorMessageMap],
+    [onEvaluated, errorMessageMap],
   );
 
   const evaluate = useCallback(
