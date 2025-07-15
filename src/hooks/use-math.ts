@@ -1,21 +1,5 @@
-import { compile } from 'mathjs';
+import { compile, MathScope } from 'mathjs';
 import { useCallback, useRef, useState } from 'react';
-
-/**
- * Interface for Map-like scope objects compatible with mathjs.
- */
-export interface MapLike<TKey = string, TValue = unknown> {
-  get(key: TKey): TValue;
-  set(key: TKey, value: TValue): TValue;
-  has(key: TKey): boolean;
-  keys(): IterableIterator<TKey> | TKey[];
-}
-
-/**
- * Scope for variables used in math expression evaluation.
- * Can be a plain object, ES6 Map, or any Map-like duck type.
- */
-export type ScopeType = Record<string, unknown> | MapLike<string, unknown>;
 
 /**
  * Result structure for math expression validation and evaluation.
@@ -50,8 +34,8 @@ export type UseMathOptions = {
  */
 export type UseMathResult = {
   state: EvaluationResult;
-  evaluate: (expr: string, scope?: ScopeType) => void;
-  evaluateSync: (expr: string, scope?: ScopeType) => EvaluationResult;
+  evaluate: (expr: string, scope?: MathScope) => void;
+  evaluateSync: (expr: string, scope?: MathScope) => EvaluationResult;
   reset: () => void;
 };
 
@@ -76,7 +60,7 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const evaluateSync = useCallback(
-    (expr: string, scope?: ScopeType): EvaluationResult => {
+    (expr: string, scope?: MathScope): EvaluationResult => {
       try {
         const compiled = compile(expr);
         const res = compiled.evaluate(scope);
@@ -104,7 +88,7 @@ export const useMath = (options: UseMathOptions = {}): UseMathResult => {
   );
 
   const evaluate = useCallback(
-    (expr: string, scope?: ScopeType) => {
+    (expr: string, scope?: MathScope) => {
       const exec = () => {
         const nextState = evaluateSync(expr, scope);
         setState(nextState);
