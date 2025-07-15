@@ -1,6 +1,6 @@
 {
   "name": "use-mathjs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A powerful, React hook built with mathjs for safely evaluating, formatting, and analyzing math expressions in React apps.",
   "keywords": [
     "react",
